@@ -1,11 +1,14 @@
-# Created by https://www.toptal.com/developers/gitignore/api/nextjs,node,react,webstorm,visualstudiocode
-# Edit at https://www.toptal.com/developers/gitignore?templates=nextjs,node,react,webstorm,visualstudiocode
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
-### NextJS ###
 # dependencies
 /node_modules
 /.pnp
-.pnp.js
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
 
 # testing
 /coverage
@@ -27,8 +30,8 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# local env files
-.env*.local
+# env files (can opt-in for committing if needed)
+.env*
 
 # vercel
 .vercel
@@ -36,6 +39,13 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+
+# Created by https://www.toptal.com/developers/gitignore/api/nextjs,node,react,webstorm,visualstudiocode
+# Edit at https://www.toptal.com/developers/gitignore?templates=nextjs,node,react,webstorm,visualstudiocode
+
+### NextJS ###
+# dependencies
 
 ### Node ###
 # Logs
@@ -75,7 +85,7 @@ bower_components
 build/Release
 
 # Dependency directories
-node_modules/
+../../../node_modules/
 jspm_packages/
 
 # Snowpack dependency directory (https://snowpack.dev/)
@@ -161,7 +171,6 @@ dist
 .yarn/unplugged
 .yarn/build-state.yml
 .yarn/install-state.gz
-.pnp.*
 
 ### Node Patch ###
 # Serverless Webpack directories
@@ -177,7 +186,7 @@ dist
 **/*.backup.*
 **/*.back.*
 
-node_modules
+../node_modules
 
 *.sublime*
 
