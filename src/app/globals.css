@@ -1,14 +1,22 @@
+/* The Directives included below are for tailwind customization */
+@tailwind base; /* Resets browser styles to ensure consistent tailwind styling across different browsers */
+@tailwind components; /* Includes Tailwind's pre-designed component classes */ 
+@tailwind utilities; /* Provides a wide range of utility classes for things like spacing, colours, typography, etc */ 
+
+
 :root {
-    --background: #ffffff;
-    --foreground: #171717;
+    --background: #222222;
+    --foreground: #ffffff;
+    --secondary-colour: #FFD700; 
 }
 
-@media (prefers-color-scheme: dark) {
+/* Below is not necessary for now, might remove completely in later development */
+/* @media (prefers-color-scheme: dark) {
     :root {
         --background: #0a0a0a;
         --foreground: #ededed;
     }
-}
+} */
 
 html,
 body {
@@ -33,6 +41,14 @@ body {
 a {
     color: inherit;
     text-decoration: none;
+}
+
+/* Create your own customized tailwind classes here */
+@layer utilities {
+    /* Combines all 3 pre-designed tailwind classes into one customized class */
+    .flex-center {
+        @apply flex justify-center items-center;
+    }
 }
 
 @media (prefers-color-scheme: dark) {
