@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "test": "jest --watchAll --verbose --coverage"
   },
   "dependencies": {
     "next": "15.1.5",
@@ -16,7 +17,13 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/react": "^16.2.0",
+    "@testing-library/user-event": "^14.6.1",
+    "cypress": "^14.0.1",
     "eslint": "^9",
-    "eslint-config-next": "15.1.5"
+    "eslint-config-next": "15.1.5",
+    "jest": "^29.7.0",
+    "msw": "^2.7.0"
   }
 }
