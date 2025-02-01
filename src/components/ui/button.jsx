@@ -1,8 +1,9 @@
 import React from "react";
+import styles from "./Button.module.css"
 
 const Button = ({text}) => {
     return (
-        <div className="p-3">
+        <div className={styles["header-btn"]}>
             <span>{text}</span>
         </div>
     )

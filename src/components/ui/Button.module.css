@@ -1,0 +1,19 @@
+.header-btn {
+  outline: 1px solid white;
+  border-radius: 50px;
+  display: flex;
+  padding: 0.8rem 3rem;
+  justify-content: center;
+  align-items: center;
+  max-width: 150px;
+  font-size: 22px;
+  font-weight: 600;
+  transition: 0.2s ease-in-out;
+  margin: 0;
+}
+
+.header-btn:hover {
+  cursor: pointer;
+  color: var(--background);
+  background-color: white;
+}
