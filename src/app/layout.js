@@ -1,5 +1,6 @@
 import { Nunito } from "next/font/google";
 import "./globals.css";
+import Header from "@/components/Header";
 
 // Import the Nunito font
 const nunito = Nunito({
@@ -17,6 +18,7 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body className={`${nunito.variable}`}>
+        <Header />
         {children}
       </body>
     </html>
