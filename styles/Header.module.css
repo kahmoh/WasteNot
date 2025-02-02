@@ -1,11 +1,11 @@
 .header-container {
     width: 100vw;
-    height: 100px;
+    max-height: 100px;
     display: flex;
     flex-direction: row;
     justify-content: space-between;
     align-items: center;
-    padding: 2rem 3.5rem;
+    padding: 1.5rem 3.5rem;
     border-bottom: 1px solid rgb(255, 255, 255, 0.2);
 }
 

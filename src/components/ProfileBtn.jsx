@@ -21,8 +21,8 @@ const ProfileBtn = () => {
         setProfileImage("/profile_circle.png");
       }}
     >
-      <Image src={menuImage} alt="Hamburger Menu" width={30} height={30} />
-      <Image src={profileImage} alt="Profile Circle" width={30} height={30} />
+      <Image src={menuImage} alt="Hamburger Menu" width={20} height={20} />
+      <Image src={profileImage} alt="Profile Circle" width={20} height={20} />
     </div>
   );
 };
