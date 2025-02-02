@@ -12,7 +12,7 @@
   margin: 0;
 }
 
-.header-btn:hover {
+.header-btn:hover, .header-btn.active {
   cursor: pointer;
   color: var(--background);
   background-color: white;
