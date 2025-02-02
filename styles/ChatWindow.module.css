@@ -1,0 +1,25 @@
+.chat-window-header {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    background-color: #1A1A1A;
+    padding: 0.75rem 4rem;
+    min-height: 50px;
+    display: flex;
+    align-items: center;
+    flex-direction: row;
+    gap: 2.5rem;
+    width: 100%;
+}
+
+.chat-window-container {
+    display: flex;
+    flex-direction: column;
+    width: 75vw;
+}
+
+.messages-container {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    padding-top: 1rem;
+    height: 75%;
+}

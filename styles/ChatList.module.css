@@ -1,7 +1,7 @@
 .chatlist-container {
     padding: 2rem 1.5rem;
     width: 25vw;
-    height: 100vh;
+    height: calc(100vh - 100px);
     border-right: 1px solid rgba(255, 255, 255, 0.2);
     background-color: #1A1A1A;
     font-size: 20px;

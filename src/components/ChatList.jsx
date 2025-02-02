@@ -1,6 +1,6 @@
 import React from 'react';
 import ChatItem from './ChatItem';
-import styles from "./ChatList.module.css";
+import styles from "../../styles/ChatList.module.css";
 import Image from 'next/image';
 
 const ChatList = () => {
