@@ -4,32 +4,18 @@ import ChatItem from "./ChatItem";
 import styles from "../../styles/ChatList.module.css";
 import Image from "next/image";
 
-const ChatList = () => {
+const ChatList = ({chats, onChatSelect, selectedChat}) => {
   // State for search input and chat data
   const [searchQuery, setSearchQuery] = useState("");
-  const [chats] = useState([
-    {
-      id: 1,
-      name: "Sarah",
-      msgPreview: "Hey there!",
-      timestamp: "1:47 PM",
-      profilePic: "/placeholder_profile_img.png",
-    },
-    {
-      id: 2,
-      name: "John",
-      msgPreview: "Thanks!",
-      timestamp: "2:00 PM",
-      profilePic: "/placeholder_profile_img_2.png",
-    },
-  ]);
 
   // Filter chats based on search query
-  const filteredChats = chats.filter(
-    (chat) =>
+  const filteredChats = chats.filter(chat => {
+    const lastMessage = chat.messages[chat.messages.length - 1]?.text || '';
+    return (
       chat.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      chat.msgPreview.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+      lastMessage.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  });
 
   return (
     <div className={styles["chatlist-container"]}>
@@ -57,9 +43,11 @@ const ChatList = () => {
           <ChatItem
             key={chat.id}
             profilePic={chat.profilePic}
+            isSelected={selectedChat?.id === chat.id}
             name={chat.name}
-            msgPreview={chat.msgPreview}
-            timestamp={chat.timestamp}
+            msgPreview={chat.messages.length > 0 ? chat.messages[chat.messages.length -1].text : ''}
+            timestamp={chat.messages.length > 0 ? chat.messages[chat.messages.length -1].timestamp : ''}
+            onClick={() => onChatSelect(chat.id)}
           />
         ))
       ) : (

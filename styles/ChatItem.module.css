@@ -11,9 +11,10 @@
     transition: 0.2s ease-in-out;
 }
 
-.chat-item-container:hover {
+.chat-item-container:hover, .chat-item-container.selected {
     background-color: rgba(255, 255, 255, 0.1);
     border: 1px solid rgba(255, 255, 255, 0.1);
+    cursor: pointer;
 }
 
 .profile-container {
