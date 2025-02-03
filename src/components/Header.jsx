@@ -1,5 +1,5 @@
 "use client";
-import Button from "./ui/Button";
+import Button from "./ui/button";
 import styles from "../../styles/Header.module.css";
 import ProfileBtn from "./ProfileBtn";
 import { useRouter, usePathname } from "next/navigation";
