@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import ChatItem from "./ChatItem";
-import styles from "../../styles/ChatList.module.css";
+import ChatItem from "./ChatItem.jsx";
+import styles from "../styles/ChatList.module.css";
 import Image from "next/image";
 
 const ChatList = ({chats, onChatSelect, selectedChat}) => {

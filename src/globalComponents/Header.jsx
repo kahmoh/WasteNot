@@ -1,7 +1,7 @@
 "use client";
-import Button from "./ui/button";
-import styles from "../../styles/Header.module.css";
-import ProfileBtn from "./ProfileBtn";
+import Button from "../messages/components/ui/button.jsx";
+import styles from "../messages/styles/Header.module.css";
+import ProfileBtn from "./ProfileBtn.jsx";
 import { useRouter, usePathname } from "next/navigation";
 
 const Header = () => {

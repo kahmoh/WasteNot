@@ -1,8 +1,8 @@
 import React from "react";
-import styles from "../../styles/ChatWindow.module.css";
+import styles from "../styles/ChatWindow.module.css";
 import Image from "next/image";
-import ChatMessage from "./ChatMessage";
-import MessageInput from "./MessageInput";
+import ChatMessage from "./ChatMessage.jsx";
+import MessageInput from "./MessageInput.jsx";
 
 // ChatWindow component displays the chat interface for a selected conversation
 const ChatWindow = ({ profilePic, name, messages }) => {

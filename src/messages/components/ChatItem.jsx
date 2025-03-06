@@ -1,5 +1,5 @@
 import React from "react";
-import styles from "../../styles/ChatItem.module.css";
+import styles from "../styles/ChatItem.module.css";
 import Image from "next/image";
 
 const ChatItem = ({profilePic, name, msgPreview, timestamp, onClick, isSelected}) => {

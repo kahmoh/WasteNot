@@ -1,5 +1,5 @@
 import React from 'react';
-import styles from "../../styles/MessageInput.module.css";
+import styles from "../styles/MessageInput.module.css";
 import Image from 'next/image';
 
 const MessageInput = () => {

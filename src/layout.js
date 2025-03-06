@@ -1,6 +1,6 @@
 import { Nunito } from "next/font/google";
 import "./globals.css";
-import Header from "@/components/Header";
+import Header from "@/globalComponents/Header.jsx";
 
 // Import the Nunito font
 const nunito = Nunito({
