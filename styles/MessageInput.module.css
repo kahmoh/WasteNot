@@ -11,8 +11,19 @@
     width: 80%;
 }
 
+.input-box {
+    border: none;
+    background: transparent;
+    outline: none;
+    color: white;
+    width: 100%;
+}
+
 .send-icon {
     margin-right: 0.5rem;
+    border: none;
+    outline: none;
+    background: transparent;
 }
 
 .send-icon:hover {

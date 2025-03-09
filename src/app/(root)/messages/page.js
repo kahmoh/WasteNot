@@ -8,7 +8,7 @@ export default function Messages() {
   // State to track the currently selected chat
   const [selectedChat, setSelectedChat] = useState(null);
   // Static chat data (will be replaced with data from an API)
-  const [chats] = useState([
+  const [chats, setChats] = useState([
     {
       id: 1,
       name: "Sarah",
@@ -33,6 +33,15 @@ export default function Messages() {
       ],
     },
   ]);
+
+  const handleNewMessage = (chatId, newMessage) => {
+    setChats(prevChats => prevChats.map(chat => 
+      chat.id === chatId 
+        ? { ...chat, messages: [...chat.messages, newMessage] }
+        : chat
+    ));
+  };
+
   return (
     <div style={{ display: "flex", flexDirection: "row" }}>
       {/* ChatList component displays the list of chats */}
@@ -51,6 +60,7 @@ export default function Messages() {
           profilePic={selectedChat.profilePic}
           name={selectedChat.name}
           messages={selectedChat.messages}
+          onNewMessage={(message) => handleNewMessage(selectedChat.id, message)}
         />
       ) : (
         // Show this text when no chat is selected

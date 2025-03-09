@@ -1,11 +1,33 @@
-import React from "react";
+"use client";
+import React, { useEffect, useRef } from "react";
 import styles from "../../styles/ChatWindow.module.css";
 import Image from "next/image";
 import ChatMessage from "./ChatMessage";
 import MessageInput from "./MessageInput";
 
 // ChatWindow component displays the chat interface for a selected conversation
-const ChatWindow = ({ profilePic, name, messages }) => {
+const ChatWindow = ({ profilePic, name, messages, onNewMessage }) => {
+  const messagesEndRef = useRef(null);
+
+  const handleSend = (messageText) => {
+    const newMessage = {
+      text: messageText,
+      role: "user", // Assuming the sender is always the user
+      timestamp: new Date().toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      })
+    };
+    onNewMessage(newMessage);
+  };
+
+  // Auto-scroll to bottom when messages change
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behaviour: "smooth" });
+    }
+  }, [messages]);
+
   return (
     <div className={styles["chat-window-container"]}>
       {/* Header section displaying the chat participant's profile picture and name */}
@@ -21,10 +43,11 @@ const ChatWindow = ({ profilePic, name, messages }) => {
         {messages.map((message, index) => (
           <ChatMessage key={index} role={message.role} message={message.text} />
         ))}
+        <div ref={messagesEndRef} /> {/* Invisible marker for scrolling */}
       </div>
 
       {/* Input area for sending new messages */}
-      <MessageInput />
+      <MessageInput onSend={handleSend} />
     </div>
   );
 };
