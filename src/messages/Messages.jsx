@@ -1,8 +1,7 @@
-"use client";
-import "@/globals.css";
+import "../globals.css";
 import React, { useState } from "react";
-import ChatList from "@/messages/components/ChatList.jsx";
-import ChatWindow from "@/messages/components/ChatWindow.jsx";
+import ChatList from "./components/ChatList.jsx";
+import ChatWindow from "./components/ChatWindow.jsx";
 
 export default function Messages() {
   // State to track the currently selected chat

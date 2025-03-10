@@ -1,6 +1,5 @@
 import React from "react";
 import styles from "../styles/ChatWindow.module.css";
-import Image from "next/image";
 import ChatMessage from "./ChatMessage.jsx";
 import MessageInput from "./MessageInput.jsx";
 
@@ -10,7 +9,7 @@ const ChatWindow = ({ profilePic, name, messages }) => {
     <div className={styles["chat-window-container"]}>
       {/* Header section displaying the chat participant's profile picture and name */}
       <div className={styles["chat-window-header"]}>
-        <Image src={profilePic} alt="Profile Picture" width={50} height={50} />
+        <img src={profilePic} alt="Profile Picture" width={50} height={50} />
         {/* Display the chat participant's name */}
         <span style={{ fontSize: "22px" }}>{name}</span>
       </div>
