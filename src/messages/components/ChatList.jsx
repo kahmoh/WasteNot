@@ -1,8 +1,6 @@
-"use client";
 import React, { useState, useEffect } from "react";
-import ChatItem from "./ChatItem";
-import styles from "../../styles/ChatList.module.css";
-import Image from "next/image";
+import ChatItem from "./ChatItem.jsx";
+import styles from "../styles/ChatList.module.css";
 
 const ChatList = ({chats, onChatSelect, selectedChat}) => {
   // State for search input and chat data
@@ -29,7 +27,7 @@ const ChatList = ({chats, onChatSelect, selectedChat}) => {
           onChange={(e) => setSearchQuery(e.target.value)}
           className={styles["search-input"]}
         />
-        <Image
+        <img
           src="/search_icon.png"
           alt="Search Icon"
           width={30}

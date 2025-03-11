@@ -1,14 +1,13 @@
-"use client";
-import Button from "./ui/button";
-import styles from "../../styles/Header.module.css";
-import ProfileBtn from "./ProfileBtn";
-import { useRouter, usePathname } from "next/navigation";
+import { useNavigate, useLocation } from "react-router-dom";
+import Button from "../messages/components/ui/button.jsx";
+import styles from "../messages/styles/Header.module.css";
+import ProfileBtn from "./ProfileBtn.jsx";
 
 const Header = () => {
   // Used for navigating pages
-  const router = useRouter();
+  const navigate = useNavigate();
   // Tracks the current page that the user is on
-  const pathname = usePathname();
+  const location = useLocation();
 
   return (
     <div className={styles["header-container"]}>
@@ -19,13 +18,13 @@ const Header = () => {
         {/* Button is highlighted based on user's current page */}
         <Button
           text="Map"
-          isActive={pathname == "/"}
-          onClick={() => router.push("/")}
+          isActive={location.pathname === "/"}
+          onClick={() => navigate("/")}
         />
         <Button
           text="Messages"
-          isActive={pathname == "/messages"}
-          onClick={() => router.push("/messages")}
+          isActive={location.pathname == "/messages"}
+          onClick={() => navigate("/messages")}
         />
       </div>
       {/* Profile button on the top right */}

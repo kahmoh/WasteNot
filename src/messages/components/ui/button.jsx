@@ -1,6 +1,6 @@
 "use client";
 import React from "react";
-import styles from "../../../styles/Button.module.css";
+import styles from "../../styles/Button.module.css";
 
 // Takes in props:
 // text: displayed in button

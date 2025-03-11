@@ -1,7 +1,6 @@
-"use client";
+
 import React, { useState } from "react";
-import Image from "next/image";
-import styles from "../../styles/ProfileBtn.module.css";
+import styles from "../messages/styles/ProfileBtn.module.css";
 
 const ProfileBtn = () => {  
   const [menuImage, setMenuImage] = useState("/hamburger_menu.png");
@@ -21,8 +20,8 @@ const ProfileBtn = () => {
         setProfileImage("/profile_circle.png");
       }}
     >
-      <Image src={menuImage} alt="Hamburger Menu" width={20} height={20} />
-      <Image src={profileImage} alt="Profile Circle" width={20} height={20} />
+      <img src={menuImage} alt="Hamburger Menu" width={20} height={20} />
+      <img src={profileImage} alt="Profile Circle" width={20} height={20} />
     </div>
   );
 };
