@@ -12,6 +12,9 @@ const App = () => {
         <Routes>
           <Route path="/" element={<Map />} />
           <Route path="/messages" element={<Messages />} />
+          {/* Error page */}
+          {/* <Route path="error" element={<NotFound />} /> */}
+          {/* <Route path="*" element={<Navigate to="/error" replace />} /> */}
         </Routes>
       </RootLayout>
     </>
