@@ -66,4 +66,26 @@ describe("Messages Integration", () => {
     fireEvent.change(searchInput, { target: { value: "nonexistent" } });
     expect(screen.getByText("No chats found")).toBeInTheDocument();
   });
+
+  it("adds a new message to the chat when sent", () => {
+    render(<Messages />);
+
+    // 1. Select a chat (e.g., Sarah)
+    const sarahChatItem = screen.getByRole("button", { name: /Sarah/i });
+    fireEvent.click(sarahChatItem);
+
+    // 2. Find input and type message
+    const input = screen.getByTestId("message-input");
+    fireEvent.change(input, { target: { value: "This is a test message" } });
+
+    // 3. Click send
+    const sendButton = screen.getByTestId("send-button");
+    fireEvent.click(sendButton);
+
+    // 4. Assert message appears in chat window
+    const chatWindow = screen.getByTestId("chat-window");
+    expect(
+      within(chatWindow).getByText("This is a test message")
+    ).toBeInTheDocument();
+  });
 });
