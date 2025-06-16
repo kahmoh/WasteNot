@@ -1,10 +1,20 @@
-import React from "react";
+import React, { useState } from "react";
 import styles from "../styles/ChatWindow.module.css";
 import ChatMessage from "./ChatMessage.jsx";
 import MessageInput from "./MessageInput.jsx";
 
 // ChatWindow component displays the chat interface for a selected conversation
-const ChatWindow = ({ profilePic, name, messages }) => {
+const ChatWindow = ({ profilePic, name, messages: initialMessages }) => {
+  const [messages, setMessages] = useState(initialMessages);
+
+  const handleSendMessage = (newText) => {
+    const newMessage = {
+      role: "user", // or dynamically set if needed
+      text: newText,
+    };
+    setMessages([...messages, newMessage]);
+  };
+
   return (
     <div className={styles["chat-window-container"]} data-testid="chat-window">
       {/* Header section displaying the chat participant's profile picture and name */}
@@ -23,7 +33,7 @@ const ChatWindow = ({ profilePic, name, messages }) => {
       </div>
 
       {/* Input area for sending new messages */}
-      <MessageInput />
+      <MessageInput onSend={handleSendMessage}/>
     </div>
   );
 };
