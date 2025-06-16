@@ -6,7 +6,7 @@ import MessageInput from "./MessageInput.jsx";
 // ChatWindow component displays the chat interface for a selected conversation
 const ChatWindow = ({ profilePic, name, messages }) => {
   return (
-    <div className={styles["chat-window-container"]}>
+    <div className={styles["chat-window-container"]} data-testid="chat-window">
       {/* Header section displaying the chat participant's profile picture and name */}
       <div className={styles["chat-window-header"]}>
         <img src={profilePic} alt="Profile Picture" width={50} height={50} />
