@@ -1,0 +1,1 @@
+// Optional: to store chat metadata (names, pics)

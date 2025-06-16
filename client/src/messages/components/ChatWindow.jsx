@@ -4,7 +4,7 @@ import ChatMessage from "./ChatMessage.jsx";
 import MessageInput from "./MessageInput.jsx";
 
 // ChatWindow component displays the chat interface for a selected conversation
-const ChatWindow = ({ profilePic, name, messages }) => {
+const ChatWindow = ({ profilePic, name, messages, onSend }) => {
   const [localMessages, setLocalMessages] = useState([]);
 
   useEffect(() => {
@@ -18,12 +18,12 @@ const ChatWindow = ({ profilePic, name, messages }) => {
 }, [localMessages]);
 
 
-  const handleSend = (newMessage) => {
-    setLocalMessages((prev) => [
-      ...prev,
-      { role: "user", text: newMessage },
-    ]);
-  };
+  // const handleSend = (newMessage) => {
+  //   setLocalMessages((prev) => [
+  //     ...prev,
+  //     { role: "user", text: newMessage },
+  //   ]);
+  // };
 
   return (
     <div className={styles["chat-window-container"]} data-testid="chat-window">
@@ -43,7 +43,7 @@ const ChatWindow = ({ profilePic, name, messages }) => {
       </div>
 
       {/* Input area for sending new messages */}
-      <MessageInput onSend={handleSend}/>
+      <MessageInput onSend={onSend}/>
     </div>
   );
 };
