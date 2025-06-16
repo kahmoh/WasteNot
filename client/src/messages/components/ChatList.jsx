@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import ChatItem from "./ChatItem.jsx";
 import styles from "../styles/ChatList.module.css";
 
