@@ -32,6 +32,7 @@ export default function Messages() {
     chatsRef.current = initialChats;
 
     socket.on("receive-message", ({ chatId, text }) => {
+      console.log("Received message from server:", text);
       setChats((prevChats) =>
         prevChats.map((chat) =>
           chat.id === chatId
@@ -42,7 +43,11 @@ export default function Messages() {
                   {
                     text,
                     role: "other",
-                    timestamp: new Date().toLocaleTimeString(),
+                    timestamp: new Date().toLocaleTimeString([], {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                      hour12: true,
+                    }),
                   },
                 ],
               }
@@ -50,15 +55,35 @@ export default function Messages() {
         )
       );
     });
+
+    // Cleanup on unmount
+    return () => {
+      socket.off("receive-message");
+    };
   }, []);
 
+  // Keep selectedChat in sync with chats
+  useEffect(() => {
+    if (selectedChat) {
+      const updatedChat = chats.find((c) => c.id === selectedChat.id);
+      if (updatedChat) {
+        setSelectedChat(updatedChat);
+      }
+    }
+  }, [chats]);
+
+  // Handle sending new messages
   const handleSendMessage = (text) => {
     if (!selectedChat) return;
 
     const newMessage = {
       text,
       role: "user",
-      timestamp: new Date().toLocaleTimeString(),
+      timestamp: new Date().toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: true,
+      }),
     };
 
     // Update UI immediately
@@ -69,6 +94,8 @@ export default function Messages() {
           : chat
       )
     );
+
+    console.log("Sending message:", newMessage);
 
     // Emit to the server
     socket.emit("send-message", {
