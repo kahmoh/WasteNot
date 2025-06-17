@@ -50,36 +50,32 @@ export default function Messages() {
         )
       );
     });
-
-    return () => {
-      socket.disconnect();
-    };
   }, []);
 
   const handleSendMessage = (text) => {
-  if (!selectedChat) return;
+    if (!selectedChat) return;
 
-  const newMessage = {
-    text,
-    role: "user",
-    timestamp: new Date().toLocaleTimeString(),
+    const newMessage = {
+      text,
+      role: "user",
+      timestamp: new Date().toLocaleTimeString(),
+    };
+
+    // Update UI immediately
+    setChats((prevChats) =>
+      prevChats.map((chat) =>
+        chat.id === selectedChat.id
+          ? { ...chat, messages: [...chat.messages, newMessage] }
+          : chat
+      )
+    );
+
+    // Emit to the server
+    socket.emit("send-message", {
+      chatId: selectedChat.id,
+      text,
+    });
   };
-
-  // Update UI immediately
-  setChats((prevChats) =>
-    prevChats.map((chat) =>
-      chat.id === selectedChat.id
-        ? { ...chat, messages: [...chat.messages, newMessage] }
-        : chat
-    )
-  );
-
-  // Emit to the server
-  socket.emit("send-message", {
-    chatId: selectedChat.id,
-    text,
-  });
-};
 
   return (
     <div style={{ display: "flex", flexDirection: "row" }}>

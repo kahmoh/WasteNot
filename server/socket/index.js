@@ -5,6 +5,7 @@ module.exports = function (io) {
     console.log("A user connected:", socket.id);
 
     socket.on("send-message", ({ chatId, text }) => {
+      console.log(`Received from client: ${text}`);
       // Optionally save to DB here
 
       // Emit to everyone (or just the intended chat room)

@@ -19,7 +19,7 @@ const MessageInput = ({ onSend }) => {
   return (
     <div className={styles["message-input-container"]}>
       <input
-        className="outline-none bg-transparent border-none"
+        className="outline-none bg-transparent border-none w-full"
         type="text"
         placeholder="Send a message..."
         value={input}
