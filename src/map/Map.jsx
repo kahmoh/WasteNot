@@ -1,9 +1,12 @@
 import {MapContainer, TileLayer, Marker, Popup} from "react-leaflet";
+import NavigationBar from "./components/NavigationBar";
 import "leaflet/dist/leaflet.css";
 import './styles/Map.css'
 
 const Map = () => {
     return (
+        <>
+            <NavigationBar/>
         <MapContainer center={[51.505, -0.09]} zoom={13} scrollWheelZoom={false}
                       className={'map'}>
             <TileLayer
@@ -16,6 +19,7 @@ const Map = () => {
                 </Popup>
             </Marker>
         </MapContainer>
+        </>
     )
 }
 
