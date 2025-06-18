@@ -1,12 +1,18 @@
-// Mongoose model for chat messages
-
 const mongoose = require("mongoose");
 
 const messageSchema = new mongoose.Schema({
-  chatId: Number,
+  chatId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Chat",
+    required: true,
+  },
   text: String,
   role: String,
-  timestamp: { type: Date, default: Date.now },
+  timestamp: {
+    type: Date,
+    default: Date.now,
+  },
 });
 
-module.exports = mongoose.model("Message", messageSchema);
+// Prevent model overwrite
+module.exports = mongoose.models.Message || mongoose.model("Message", messageSchema);
