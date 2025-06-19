@@ -1,18 +1,23 @@
-// Socket.IO logic handler
+const Message = require("../models/Message");
+const Chat = require("../models/Chat");
 
 module.exports = function (io) {
   io.on("connection", (socket) => {
     console.log("A user connected:", socket.id);
 
-    socket.on("send-message", ({ chatId, text }) => {
-      console.log(`Received from client: ${text}`);
-      // Optionally save to DB here
+    socket.on("send-message", async ({ chatId, text }) => {
+      try {
+        const newMessage = await Message.create({ chatId, text, role: "user" });
 
-      // Emit to everyone (or just the intended chat room)
-      io.emit("receive-message", {
-        chatId,
-        text,
-      });
+        await Chat.findByIdAndUpdate(chatId, {
+          $push: { messages: newMessage._id },
+          $set: { lastUpdated: Date.now() },
+        });
+
+        io.emit("receive-message", newMessage);
+      } catch (err) {
+        console.error("Message handling error:", err);
+      }
     });
 
     socket.on("disconnect", () => {

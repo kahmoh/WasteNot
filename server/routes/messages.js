@@ -7,7 +7,7 @@ const Chat = require("../models/Chat");
 router.post("/send", async (req, res) => {
   const { chatId, text, role } = req.body;
 
-  // 🔴 Basic validation
+  // Basic validation
   if (!chatId || !text || !role) {
     return res.status(400).json({ error: "chatId, text, and role are required." });
   }

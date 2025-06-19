@@ -4,6 +4,7 @@ const express = require("express");
 const http = require("http");
 const { Server } = require("socket.io");
 const socketHandler = require("./socket");
+const mongoose = require("mongoose");
 
 const app = express();
 app.use(express.json());
