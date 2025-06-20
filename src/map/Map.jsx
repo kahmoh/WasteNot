@@ -5,7 +5,7 @@ import './styles/Map.css'
 
 const Map = () => {
     return (
-        <>
+        <div className="map-page-container">
             <NavigationBar/>
         <MapContainer center={[51.505, -0.09]} zoom={13} scrollWheelZoom={false}
                       className={'map'}>
@@ -19,7 +19,7 @@ const Map = () => {
                 </Popup>
             </Marker>
         </MapContainer>
-        </>
+        </div>
     )
 }
 
