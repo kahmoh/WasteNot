@@ -1,0 +1,21 @@
+{
+  "_id": "chat789",
+  "participant1": {
+    "_id": "user123",
+    "displayName": "Test User",
+    "profilePic": "/test-user.jpg",
+    "status": "online"
+  },
+  "participant2": {
+    "_id": "contact456",
+    "displayName": "John Smith",
+    "profilePic": "/john-smith.jpg",
+    "status": "offline"
+  },
+  "lastMessage": {
+    "_id": "msg2",
+    "text": "Hi John!",
+    "createdAt": "2023-07-20T12:30:00Z"
+  },
+  "unreadCount": 0
+}

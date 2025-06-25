@@ -1,7 +1,7 @@
 import "../globals.css";
-import React, { useState, useEffect, useRef } from "react";
-import ChatList from "./components/ChatList.jsx";
-import ChatWindow from "./components/ChatWindow.jsx";
+import React, { useState, useEffect } from "react";
+import ChatList from "./components/ChatList/ChatList.jsx";
+import ChatWindow from "./components/ChatWindow/ChatWindow.jsx";
 import { io } from "socket.io-client";
 
 const socket = io("http://localhost:3001");
@@ -10,59 +10,108 @@ export default function Messages() {
   const [chats, setChats] = useState([]);
   // State to track the currently selected chat
   const [selectedChat, setSelectedChat] = useState(null);
-  const chatsRef = useRef([]);
+  // const chatsRef = useRef([]);
+  const [currentUser, setCurrentUser] = useState({
+    _id: '68556af613b66225957c9635', // Must match participant IDs in your chats
+    username: 'john_doe',
+    displayName: 'John Doe',
+    profilePic: '/john.jpg',
+    status: 'online',
+    lastActive: new Date('2025-06-20T14:06:46.777Z')
+  });
 
   useEffect(() => {
-    // Initial dummy chats
-    const initialChats = [
-      {
-        id: 1,
-        name: "Sarah",
-        profilePic: "/placeholder_profile_img.png",
-        messages: [],
-      },
-      {
-        id: 2,
-        name: "John",
-        profilePic: "/placeholder_profile_img_2.png",
-        messages: [],
-      },
-    ];
-    setChats(initialChats);
-    chatsRef.current = initialChats;
+  // Set mock current user if authentication isn't implemented yet
+  // if (!currentUser) {
+  //   setCurrentUser({
+  //     _id: 'mock-user-id', // Must match participant IDs in your backend
+  //     username: 'testuser',
+  //     displayName: 'Test User',
+  //     profilePic: '/default-profile.jpg',
+  //     status: 'online'
+  //   });
+  //   return; // Exit early to prevent double-fetching
+  // }
 
-    socket.on("receive-message", ({ chatId, text }) => {
-      console.log("Received message from server:", text);
-      setChats((prevChats) =>
-        prevChats.map((chat) =>
-          chat.id === chatId
-            ? {
-                ...chat,
-                messages: [
-                  ...chat.messages,
-                  {
-                    text,
-                    role: "other",
-                    timestamp: new Date().toLocaleTimeString([], {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                      hour12: true,
-                    }),
-                  },
-                ],
-              }
-            : chat
-        )
-      );
-    });
+  // Fetch chats with error handling
+  const fetchChats = async () => {
+    try {
+      const response = await fetch("/api/chats");
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+      
+      const data = await response.json();
+      console.log('Fetched chats raw data:', data); // Debug log
 
-    // Cleanup on unmount
-    return () => {
-      socket.off("receive-message");
-    };
-  }, []);
+      const formattedChats = data.map(chat => {
+        // Safely determine the other participant
+        const otherParticipant = chat.participant1._id === currentUser._id
+          ? chat.participant2
+          : chat.participant1;
 
-  // Keep selectedChat in sync with chats
+        return {
+          id: chat._id,
+          otherParticipant,
+          lastMessage: chat.lastMessage || null, // Handle undefined lastMessage
+          unreadCount: chat.unreadCount || 0,    // Default to 0 if undefined
+          messages: chat.messages || []          // Initialize messages array
+        };
+      });
+
+      setChats(formattedChats);
+      console.log('Formatted chats:', formattedChats); // Debug log
+
+      // If there are chats but none selected, auto-select the first one
+      // if (formattedChats.length > 0 && !selectedChat) {
+      //   const firstChat = formattedChats[0];
+      //   setSelectedChat(firstChat);
+        
+      //   // Optionally load messages for the first chat
+      //   const messagesResponse = await fetch(`/api/messages/${firstChat.id}`);
+      //   const messages = await messagesResponse.json();
+      //   setSelectedChat(prev => ({ ...prev, messages }));
+      // }
+
+    } catch (error) {
+      console.error("Failed to load chats:", error);
+      // Optionally set an error state to show to users
+    }
+  };
+
+  fetchChats();
+
+  // Socket.IO listeners with cleanup
+  const handleNewMessage = ({ chatId, text, sender }) => {
+    setChats(prevChats => 
+      prevChats.map(chat => 
+        chat.id === chatId
+          ? {
+              ...chat,
+              lastMessage: { text, createdAt: new Date() },
+              unreadCount: chat.id === selectedChat?.id ? 0 : (chat.unreadCount || 0) + 1
+            }
+          : chat
+      )
+    );
+
+    if (selectedChat?.id === chatId) {
+      setSelectedChat(prev => ({
+        ...prev,
+        messages: [
+          ...prev.messages,
+          { text, sender, createdAt: new Date() }
+        ]
+      }));
+    }
+  };
+
+  socket.on("receive-message", handleNewMessage);
+
+  return () => {
+    socket.off("receive-message", handleNewMessage);
+  };
+}, [selectedChat, currentUser?._id]); // Only re-run if these change
+
+  // Keep selectedChat in sync with chats 
   useEffect(() => {
     if (selectedChat) {
       const updatedChat = chats.find((c) => c.id === selectedChat.id);
@@ -70,38 +119,62 @@ export default function Messages() {
         setSelectedChat(updatedChat);
       }
     }
-  }, [chats]);
+  }, [chats, selectedChat]);
 
   // Handle sending new messages
-  const handleSendMessage = (text) => {
-    if (!selectedChat) return;
+  // In your Messages component
+  const handleSendMessage = async (text) => {
+    if (!selectedChat || !currentUser) return;
 
+    // Optimistic update
     const newMessage = {
       text,
-      role: "user",
-      timestamp: new Date().toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit",
-        hour12: true,
-      }),
+      sender: currentUser._id,
+      createdAt: new Date(),
     };
 
-    // Update UI immediately
-    setChats((prevChats) =>
-      prevChats.map((chat) =>
-        chat.id === selectedChat.id
-          ? { ...chat, messages: [...chat.messages, newMessage] }
-          : chat
-      )
-    );
+    setSelectedChat((prev) => ({
+      ...prev,
+      messages: [...prev.messages, newMessage],
+    }));
 
-    console.log("Sending message:", newMessage);
+    try {
+      // Socket.IO
+      socket.emit("send-message", {
+        chatId: selectedChat.id,
+        text,
+        sender: currentUser._id,
+      });
 
-    // Emit to the server
-    socket.emit("send-message", {
-      chatId: selectedChat.id,
-      text,
-    });
+      // REST API
+      await fetch("/api/messages/send", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          chatId: selectedChat.id,
+          text,
+          sender: currentUser._id,
+        }),
+      });
+    } catch (error) {
+      console.error("Failed to send message:", error);
+    }
+  };
+
+  const handleChatSelect = async (chatId) => {
+    const chat = chats.find(c => c.id === chatId);
+    setSelectedChat(chat);
+    
+    // Fetch messages for this chat
+    // const messages = await fetch(`/api/messages/${chatId}`)
+    //   .then(res => res.json());
+    
+    // setSelectedChat(prev => ({ ...prev, messages }));
+
+    // Mark as read
+    // await fetch(`/api/chats/${chatId}/read`, {
+    //   method: "POST"
+    // });
   };
 
   return (
@@ -109,20 +182,18 @@ export default function Messages() {
       {/* ChatList component displays the list of chats */}
       <ChatList
         chats={chats} // Pass the list of chats
-        onChatSelect={(chatId) =>
-          // Update selectedChat when a chat is clicked
-          setSelectedChat(chats.find((c) => c.id === chatId))
-        }
+        onChatSelect={handleChatSelect}
         selectedChat={selectedChat}
       />
       {/* Conditional rendering for ChatWindow or empty state */}
       {selectedChat ? (
         // If a chat is selected, show the ChatWindow
         <ChatWindow
-          profilePic={selectedChat.profilePic}
-          name={selectedChat.name}
+          profilePic={selectedChat.otherParticipant.profilePic}
+          name={selectedChat.otherParticipant.displayName}
           messages={selectedChat.messages}
           onSend={handleSendMessage} // Pass to MessageInput
+          currentUser={currentUser}
         />
       ) : (
         // Show this text when no chat is selected

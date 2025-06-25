@@ -1,0 +1,19 @@
+{
+  "name": "wastenot",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev:client": "npm run dev --prefix client",
+    "dev:server": "node server/index.js",
+    "dev": "concurrently \"npm run dev:client\" \"npm run dev:server\"",
+    "cypress": "cypress open",
+    "test:e2e": "cypress run"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2",
+    "cypress": "^13.0.0"
+  },
+  "dependencies": {
+    "cors": "^2.8.5"
+  }
+}

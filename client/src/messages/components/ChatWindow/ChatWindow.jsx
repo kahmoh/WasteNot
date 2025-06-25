@@ -1,10 +1,10 @@
 import React, { useEffect } from "react";
-import styles from "../styles/ChatWindow.module.css";
-import ChatMessage from "./ChatMessage.jsx";
-import MessageInput from "./MessageInput.jsx";
+import styles from "../../styles/ChatWindow.module.css";
+import ChatMessage from "../ChatMessage/ChatMessage.jsx";
+import MessageInput from "../MessageInput/MessageInput.jsx";
 
 // ChatWindow component displays the chat interface for a selected conversation
-const ChatWindow = ({ profilePic, name, messages, onSend }) => {
+const ChatWindow = ({ profilePic, name, messages, onSend, currentUser }) => {
 
   // Auto-scroll to bottom on new messages
   useEffect(() => {
@@ -25,7 +25,7 @@ const ChatWindow = ({ profilePic, name, messages, onSend }) => {
       <div className={styles["messages-container"]}>
         {/* Map through the messages array and render each message */}
         {messages.map((message, index) => (
-          <ChatMessage key={index} role={message.role} message={message.text} />
+          <ChatMessage key={index} isCurrentUser={message.sender === currentUser._id} message={message.text} />
         ))}
       </div>
 

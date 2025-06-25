@@ -1,5 +1,5 @@
-const Message = require("../models/Message");
-const Chat = require("../models/Chat");
+const Message = require("../models/Message.model");
+const Chat = require("../models/Chat.model");
 
 module.exports = function (io) {
   io.on("connection", (socket) => {
@@ -14,7 +14,7 @@ module.exports = function (io) {
           $set: { lastUpdated: Date.now() },
         });
 
-        io.emit("receive-message", newMessage);
+        io.emit("receive-message", {chatId, text: newMessage.text});
       } catch (err) {
         console.error("Message handling error:", err);
       }
