@@ -27,11 +27,4 @@ chatSchema.index(
   { unique: true }
 );
 
-// Virtual for getting the other participant
-chatSchema.virtual("otherParticipant").get(function() {
-  return (this.participant1.toString() === currentUserId) 
-    ? this.participant2 
-    : this.participant1;
-});
-
 export default mongoose.models.Chat || mongoose.model("Chat", chatSchema);

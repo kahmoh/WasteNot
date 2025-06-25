@@ -3,7 +3,7 @@ import http from "http";
 import { Server } from "socket.io";
 import cors from "cors";
 import dotenv from "dotenv";
-import socketHandler from "./socket.js";
+import socketHandler from "./socket/index.js";
 import connectDB from "./db/connect.js";
 
 import chatRoutes from "./routes/chats.route.js";

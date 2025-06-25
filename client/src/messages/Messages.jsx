@@ -10,108 +10,102 @@ export default function Messages() {
   const [chats, setChats] = useState([]);
   // State to track the currently selected chat
   const [selectedChat, setSelectedChat] = useState(null);
+  const [selectedChatMessages, setSelectedChatMessages] = useState(null);
   // const chatsRef = useRef([]);
   const [currentUser, setCurrentUser] = useState({
-    _id: '68556af613b66225957c9635', // Must match participant IDs in your chats
-    username: 'john_doe',
-    displayName: 'John Doe',
-    profilePic: '/john.jpg',
-    status: 'online',
-    lastActive: new Date('2025-06-20T14:06:46.777Z')
+    _id: "685c14670546ba0d70532048", // Must match participant IDs in your chats
+    username: "john_doe",
+    displayName: "John Doe",
+    profilePic: "/john.jpg",
+    status: "online",
+    lastActive: new Date("2025-06-20T14:06:46.777Z"),
   });
-
-  useEffect(() => {
-  // Set mock current user if authentication isn't implemented yet
-  // if (!currentUser) {
-  //   setCurrentUser({
-  //     _id: 'mock-user-id', // Must match participant IDs in your backend
-  //     username: 'testuser',
-  //     displayName: 'Test User',
-  //     profilePic: '/default-profile.jpg',
-  //     status: 'online'
-  //   });
-  //   return; // Exit early to prevent double-fetching
-  // }
 
   // Fetch chats with error handling
   const fetchChats = async () => {
     try {
       const response = await fetch("/api/chats");
-      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-      
-      const data = await response.json();
-      console.log('Fetched chats raw data:', data); // Debug log
+      if (!response.ok)
+        throw new Error(`HTTP error! status: ${response.status}`);
 
-      const formattedChats = data.map(chat => {
+      const data = await response.json();
+      console.log("Fetched chats raw data:", data); // Debug log
+
+      const formattedChats = data.map((chat) => {
         // Safely determine the other participant
-        const otherParticipant = chat.participant1._id === currentUser._id
-          ? chat.participant2
-          : chat.participant1;
+        const otherParticipant =
+          chat.participant1._id === currentUser._id
+            ? chat.participant2
+            : chat.participant1;
 
         return {
           id: chat._id,
           otherParticipant,
           lastMessage: chat.lastMessage || null, // Handle undefined lastMessage
-          unreadCount: chat.unreadCount || 0,    // Default to 0 if undefined
-          messages: chat.messages || []          // Initialize messages array
+          unreadCount: chat.unreadCount || 0, // Default to 0 if undefined
+          messages: chat.messages || [], // Initialize messages array
         };
       });
 
       setChats(formattedChats);
-      console.log('Formatted chats:', formattedChats); // Debug log
+      console.log("Formatted chats:", formattedChats); // Debug log
 
       // If there are chats but none selected, auto-select the first one
-      // if (formattedChats.length > 0 && !selectedChat) {
-      //   const firstChat = formattedChats[0];
-      //   setSelectedChat(firstChat);
-        
-      //   // Optionally load messages for the first chat
-      //   const messagesResponse = await fetch(`/api/messages/${firstChat.id}`);
-      //   const messages = await messagesResponse.json();
-      //   setSelectedChat(prev => ({ ...prev, messages }));
-      // }
+      if (formattedChats.length > 0 && !selectedChat) {
+        const firstChat = formattedChats[0];
 
+        // Fetch messages first
+        const messagesResponse = await fetch(`/api/messages/${firstChat.id}`);
+        const messages = await messagesResponse.json();
+
+        console.log("Chat messages:", messages);
+
+        // Set selectedChat including messages in one go
+        setSelectedChat({
+          ...firstChat,
+        });
+
+        setSelectedChatMessages(messages);
+      }
     } catch (error) {
       console.error("Failed to load chats:", error);
       // Optionally set an error state to show to users
     }
   };
 
-  fetchChats();
-
   // Socket.IO listeners with cleanup
   const handleNewMessage = ({ chatId, text, sender }) => {
-    setChats(prevChats => 
-      prevChats.map(chat => 
+    setChats((prevChats) =>
+      prevChats.map((chat) =>
         chat.id === chatId
           ? {
               ...chat,
               lastMessage: { text, createdAt: new Date() },
-              unreadCount: chat.id === selectedChat?.id ? 0 : (chat.unreadCount || 0) + 1
+              unreadCount:
+                chat.id === selectedChat?.id ? 0 : (chat.unreadCount || 0) + 1,
             }
           : chat
       )
     );
 
     if (selectedChat?.id === chatId) {
-      setSelectedChat(prev => ({
+      setSelectedChat((prev) => ({
         ...prev,
-        messages: [
-          ...prev.messages,
-          { text, sender, createdAt: new Date() }
-        ]
+        messages: [...prev.messages, { text, sender, createdAt: new Date() }],
       }));
     }
   };
 
-  socket.on("receive-message", handleNewMessage);
+  useEffect(() => {
+    fetchChats();
+    socket.on("receive-message", handleNewMessage);
 
-  return () => {
-    socket.off("receive-message", handleNewMessage);
-  };
-}, [selectedChat, currentUser?._id]); // Only re-run if these change
+    return () => {
+      socket.off("receive-message", handleNewMessage);
+    };
+  }, []); // Only re-run if these change
 
-  // Keep selectedChat in sync with chats 
+  // Keep selectedChat in sync with chats
   useEffect(() => {
     if (selectedChat) {
       const updatedChat = chats.find((c) => c.id === selectedChat.id);
@@ -162,14 +156,14 @@ export default function Messages() {
   };
 
   const handleChatSelect = async (chatId) => {
-    const chat = chats.find(c => c.id === chatId);
+    const chat = chats.find((c) => c.id === chatId);
     setSelectedChat(chat);
-    
+
     // Fetch messages for this chat
-    // const messages = await fetch(`/api/messages/${chatId}`)
-    //   .then(res => res.json());
-    
-    // setSelectedChat(prev => ({ ...prev, messages }));
+    const messages = await fetch(`/api/messages/${chatId}`)
+      .then(res => res.json());
+
+    setSelectedChatMessages(messages);
 
     // Mark as read
     // await fetch(`/api/chats/${chatId}/read`, {
@@ -191,7 +185,7 @@ export default function Messages() {
         <ChatWindow
           profilePic={selectedChat.otherParticipant.profilePic}
           name={selectedChat.otherParticipant.displayName}
-          messages={selectedChat.messages}
+          messages={selectedChatMessages}
           onSend={handleSendMessage} // Pass to MessageInput
           currentUser={currentUser}
         />

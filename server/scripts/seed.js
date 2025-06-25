@@ -2,9 +2,9 @@ import dotenv from "dotenv";
 dotenv.config();
 
 import mongoose from "mongoose";
-import User from "../models/User.js";
-import Chat from "../models/Chat.js";
-import Message from "../models/Message.js";
+import User from "../models/User.model.js";
+import Chat from "../models/Chat.model.js";
+import Message from "../models/Message.model.js";
 
 async function seed() {
   try {
@@ -20,19 +20,19 @@ async function seed() {
       {
         username: "john_doe",
         displayName: "John Doe",
-        profilePic: "/john.jpg",
+        profilePic: "/placeholder_profile_img.png",
         status: "online"
       },
       {
         username: "sarah_smith",
         displayName: "Sarah Smith",
-        profilePic: "/sarah.jpg",
+        profilePic: "/placeholder_profile_img_2.png",
         status: "offline"
       },
       {
         username: "alice_wonder",
         displayName: "Alice Wonder",
-        profilePic: "/alice.jpg",
+        profilePic: "/placeholder_profile_img_2.png",
         status: "online"
       }
     ]);

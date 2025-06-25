@@ -11,7 +11,7 @@ router.get("/", async (req, res) => {
     // const userId = req.user._id;
 
     // Temporary hardcoded user ID - replace with your test user's ID
-    const userId = "68556af613b66225957c9635"; // Hardcoded for testing
+    const userId = "685c14670546ba0d70532048"; // Hardcoded for testing
 
     const chats = await Chat.find({
       $or: [{ participant1: userId }, { participant2: userId }],
@@ -31,6 +31,8 @@ router.get("/", async (req, res) => {
 });
 
 // POST /chats → Create new 1:1 chat
+// Implement for much later ; after maps page have been implemented
+// Functionality: Creates a new chat if user clicks on another user's profile and selects 'contact now' 
 router.post("/", async (req, res) => {
   const { participant1, participant2 } = req.body;
 
