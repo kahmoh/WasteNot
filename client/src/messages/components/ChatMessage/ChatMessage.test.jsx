@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import { describe, it, expect } from "vitest";
-import ChatMessage from "./ChatMessage";
+import ChatMessage from "./ChatMessage/ChatMessage";
 import React from "react";
 
 describe("ChatMessage", () => {

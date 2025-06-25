@@ -1,5 +1,5 @@
 import React from 'react'
-import styles from "../styles/ChatMessage.module.css"
+import styles from "../../styles/ChatMessage.module.css"
 
 const ChatMessage = ({message, role}) => {
   return (
