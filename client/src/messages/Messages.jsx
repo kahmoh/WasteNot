@@ -4,24 +4,24 @@ import ChatList from "./components/ChatList/ChatList.jsx";
 import ChatWindow from "./components/ChatWindow/ChatWindow.jsx";
 import { io } from "socket.io-client";
 
+// Initialize Socket.IO connection to the backend
 const socket = io("http://localhost:3001");
 
 export default function Messages() {
+  // All available chats for the current user
   const [chats, setChats] = useState([]);
-  // State to track the currently selected chat
+  // Currently selected chat object
   const [selectedChat, setSelectedChat] = useState(null);
+  // Messages for the selected chat
   const [selectedChatMessages, setSelectedChatMessages] = useState(null);
   // const chatsRef = useRef([]);
-  const [currentUser, setCurrentUser] = useState({
-    _id: "685c14670546ba0d70532048", // Must match participant IDs in your chats
-    username: "john_doe",
-    displayName: "John Doe",
-    profilePic: "/john.jpg",
-    status: "online",
-    lastActive: new Date("2025-06-20T14:06:46.777Z"),
-  });
+  const [currentUser, setCurrentUser] = useState({});
 
-  // Fetch chats with error handling
+  /**
+   * Fetches all chat sessions from the backend.
+   * Maps each chat to include the other participant and metadata.
+   * If no chat is selected, auto-selects the first one.
+   */
   const fetchChats = async () => {
     try {
       const response = await fetch("/api/chats");
@@ -31,8 +31,8 @@ export default function Messages() {
       const data = await response.json();
       console.log("Fetched chats raw data:", data); // Debug log
 
+      // Format the raw chat data
       const formattedChats = data.map((chat) => {
-        // Safely determine the other participant
         const otherParticipant =
           chat.participant1._id === currentUser._id
             ? chat.participant2
@@ -73,7 +73,11 @@ export default function Messages() {
     }
   };
 
-  // Socket.IO listeners with cleanup
+  /**
+   * Handles incoming messages via Socket.IO
+   * - Updates last message and unread count
+   * - Appends message if it belongs to the current chat
+   */
   const handleNewMessage = ({ chatId, text, sender }) => {
     setChats((prevChats) =>
       prevChats.map((chat) =>
@@ -88,14 +92,16 @@ export default function Messages() {
       )
     );
 
+    // change to setselectedmessages!!
     if (selectedChat?.id === chatId) {
-      setSelectedChat((prev) => ({
+      setSelectedChatMessages((prev) => [
         ...prev,
-        messages: [...prev.messages, { text, sender, createdAt: new Date() }],
-      }));
+        { text, sender, createdAt: new Date() },
+      ]);
     }
   };
 
+  // Lifecycle effect: fetch initial chats and set up Socket.IO listeners
   useEffect(() => {
     fetchChats();
     socket.on("receive-message", handleNewMessage);
@@ -105,18 +111,10 @@ export default function Messages() {
     };
   }, []); // Only re-run if these change
 
-  // Keep selectedChat in sync with chats
-  useEffect(() => {
-    if (selectedChat) {
-      const updatedChat = chats.find((c) => c.id === selectedChat.id);
-      if (updatedChat) {
-        setSelectedChat(updatedChat);
-      }
-    }
-  }, [chats, selectedChat]);
-
-  // Handle sending new messages
-  // In your Messages component
+  /**
+   * Sends a message through both Socket.IO and the REST API.
+   * Performs optimistic UI update.
+   */
   const handleSendMessage = async (text) => {
     if (!selectedChat || !currentUser) return;
 
@@ -127,21 +125,12 @@ export default function Messages() {
       createdAt: new Date(),
     };
 
-    setSelectedChat((prev) => ({
-      ...prev,
-      messages: [...prev.messages, newMessage],
-    }));
+    // Optimistic update
+    setSelectedChatMessages((prev) => [...prev, newMessage]);
 
     try {
-      // Socket.IO
-      socket.emit("send-message", {
-        chatId: selectedChat.id,
-        text,
-        sender: currentUser._id,
-      });
-
-      // REST API
-      await fetch("/api/messages/send", {
+      // 1. Send to backend to save
+      const res = await fetch("/api/messages/send", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -150,18 +139,30 @@ export default function Messages() {
           sender: currentUser._id,
         }),
       });
+
+      // Optional: Get the saved message (with _id, timestamps) back
+      const savedMessage = await res.json();
+
+      // 2. Emit to others via WebSocket
+      socket.emit("send-message", savedMessage); // Now includes chatId, text, sender, createdAt
     } catch (error) {
       console.error("Failed to send message:", error);
     }
   };
 
+  /**
+   * Called when a chat is selected in the sidebar.
+   * - Fetches messages for that chat
+   * - Updates selected chat state
+   */
   const handleChatSelect = async (chatId) => {
     const chat = chats.find((c) => c.id === chatId);
     setSelectedChat(chat);
 
-    // Fetch messages for this chat
-    const messages = await fetch(`/api/messages/${chatId}`)
-      .then(res => res.json());
+    // Load messages for the selected chat
+    const messages = await fetch(`/api/messages/${chatId}`).then((res) =>
+      res.json()
+    );
 
     setSelectedChatMessages(messages);
 

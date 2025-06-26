@@ -5,16 +5,12 @@ export default function socketHandler(io) {
   io.on("connection", (socket) => {
     console.log("A user connected:", socket.id);
 
-    socket.on("send-message", async ({ chatId, text }) => {
+    socket.on("send-message", async ({ chatId, text, sender }) => {
       try {
-        const newMessage = await Message.create({ chat: chatId, text, role: userId });
 
-        await Chat.findByIdAndUpdate(chatId, {
-          $push: { messages: newMessage._id },
-          $set: { lastUpdated: Date.now() },
-        });
+        const createdAt = new Date();
 
-        io.emit("receive-message", { chatId, text: newMessage.text });
+        io.emit("receive-message", { chatId, text, sender, createdAt, });
       } catch (err) {
         console.error("Message handling error:", err);
       }

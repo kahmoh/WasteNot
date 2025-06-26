@@ -1,21 +1,27 @@
 import React from "react";
 import styles from "../../styles/ChatItem.module.css";
 
-const ChatItem = ({profilePic, name, msgPreview, timestamp, onClick, isSelected}) => {
+const ChatItem = ({
+  profilePic,
+  name,
+  msgPreview,
+  timestamp,
+  onClick,
+  isSelected,
+}) => {
   return (
-    <div className={`${styles["chat-item-container"]} ${isSelected ? styles["selected"] : ""}`}
-    onClick={onClick}
-    role="button"
-    tabIndex={0}>
-      {/* This extra container is to align the "name-and-msg-container" closer to the profile pic */}  
+    <div
+      className={`${styles["chat-item-container"]} ${
+        isSelected ? styles["selected"] : ""
+      }`}
+      onClick={onClick}
+      role="button"
+      tabIndex={0}
+    >
+      {/* This extra container is to align the "name-and-msg-container" closer to the profile pic */}
       <div className={styles["profile-container"]}>
         {/* Profile pic on the left */}
-        <img
-          src={profilePic}
-          alt="Profile Picture"
-          width={50}
-          height={50}
-        />
+        <img src={profilePic} alt="Profile Picture" width={50} height={50} />
         {/* Contains the name and message preview of the chat */}
         <div className={styles["name-and-msg-container"]}>
           <span className={styles["name"]}>{name}</span>

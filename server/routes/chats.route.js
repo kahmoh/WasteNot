@@ -11,7 +11,7 @@ router.get("/", async (req, res) => {
     // const userId = req.user._id;
 
     // Temporary hardcoded user ID - replace with your test user's ID
-    const userId = "685c14670546ba0d70532048"; // Hardcoded for testing
+    const userId = "685c14670546ba0d7053204a"; // Hardcoded for testing
 
     const chats = await Chat.find({
       $or: [{ participant1: userId }, { participant2: userId }],
