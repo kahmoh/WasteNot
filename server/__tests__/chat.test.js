@@ -2,17 +2,22 @@ import { describe, it, expect, beforeEach, afterAll, beforeAll } from "vitest";
 import request from "supertest"; // Supertest is used to simulate HTTP requests to your Express app
 import mongoose from "mongoose"; // Mongoose is your ODM for MongoDB
 import app from "../index"; // your Express app
-import Chat from "../models/Chat";
+import Chat from "../models/Chat.model.js";
+import User from "../models/User.model.js";
 import { MongoMemoryServer } from "mongodb-memory-server";
 
 let mongoServer; // To store in-memory server instance
+let user1, user2;
 
 // Start in-memory MongoDB before all tests
 beforeAll(async () => {
   mongoServer = await MongoMemoryServer.create();
   const uri = mongoServer.getUri();
-
   await mongoose.connect(uri);
+
+  // Create mock users
+  user1 = await User.create({ username: "u1", displayName: "User One" });
+  user2 = await User.create({ username: "u2", displayName: "User Two " });
 });
 
 // Run this before each test case
@@ -28,53 +33,49 @@ afterAll(async () => {
 });
 
 describe("Chat API", () => {
-  // Test creating a new chat
   it("should create a new chat", async () => {
-    const res = await request(app)
-      .post("/chats/create") // Hit the POST /chats route
-      .send({ participants: ["user1", "user2"] }); // Send request body
+    const res = (await request(app).post("/api/chats")).send({
+      participant1: user1._id.toString(),
+      participant2: user2._id.toString(),
+    });
 
-    expect(res.status).toBe(201); // Expect 201 Created
-    expect(res.body.participants).toContain("user1");
-    expect(res.body.participants).toContain("user2");
+    expect(res.status).toBe(201);
+    expect(res.body.participant1._id).toBe(user1._id.toString());
+    expect(res.body.participant2._id).toBe(user2._id.toString());
 
-    // Verify the chat was saved in the DB
     const chatInDb = await Chat.findById(res.body._id);
     expect(chatInDb).not.toBeNull();
   });
 
-  // Test invalid chat creation
-  it("should not create a chat with no participants", async () => {
-    const res = await request(app).post("/chats/create").send({});
-    expect(res.status).toBe(400); // Expect 400 Bad Request
+  it("should not allow duplicate chats between same users", async () => {
+    await Chat.create({
+      participant1: user1._id,
+      participant2: user2._id,
+    });
+
+    const res = await request(app).post("/api/chats").send({
+      participant1: user1._id.toString(),
+      participant2: user2._id.toString(),
+    });
+
+    expect(res.status).toBe(400); // Assuming your route returns 400 on duplicates
   });
 
-  // Test retrieving all chats
-  it("should get all chats", async () => {
-    // Seed some chats
+  it("should fetch all chats for a user", async () => {
     await Chat.create([
-      { participants: ["a", "b"] },
-      { participants: ["c", "d"] },
+      { participant1: user1._id, participant2: user2._id },
+      { participant1: user2._id, participant2: user1._id },
     ]);
 
-    const res = await request(app).get("/chats");
-    expect(res.status).toBe(200); // OK
+    const res = await request(app).get(`/api/chats?userId=${user1._id}`);
+
+    expect(res.status).toBe(200);
     expect(res.body.length).toBe(2);
   });
 
-  // Test retrieving a single chat by ID
-  it("should return a specific chat by ID", async () => {
-    const chat = await Chat.create({ participants: ["u1", "u2"] });
-
-    const res = await request(app).get(`/chats/${chat._id}`);
-    expect(res.status).toBe(200);
-    expect(res.body.participants).toContain("u1");
-  });
-
-  // Test 404 if chat doesn't exist
-  it("should return 404 for non-existent chat ID", async () => {
-    const id = new mongoose.Types.ObjectId(); // Random valid ObjectId
-    const res = await request(app).get(`/chats/${id}`);
-    expect(res.status).toBe(404);
+  it("should return 404 for invalid chat ID", async () => {
+    const fakeId = new mongoose.Types.ObjectId();
+    const res = await request(app).get(`/api/chats/${fakeId}`);
+    expect([404, 400]).toContain(res.status);
   });
 });

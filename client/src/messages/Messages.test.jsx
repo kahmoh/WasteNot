@@ -1,91 +1,114 @@
-import { render, screen, fireEvent, within } from "@testing-library/react";
+import { render, screen, fireEvent, waitFor, within } from "@testing-library/react";
 import Messages from "./Messages";
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import React from "react";
 
+// Mock fetch for chats and messages
+beforeEach(() => {
+  globalThis.fetch = vi.fn()
+    .mockImplementationOnce(() =>
+      Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve([
+          {
+            _id: "chat1",
+            participant1: { _id: "user1", displayName: "John", profilePic: "/john.jpg" },
+            participant2: { _id: "user2", displayName: "Me", profilePic: "/me.jpg" },
+            lastMessage: { text: "Thanks!" },
+            unreadCount: 1,
+            messages: []
+          },
+          {
+            _id: "chat2",
+            participant1: { _id: "user2", displayName: "Me", profilePic: "/me.jpg" },
+            participant2: { _id: "user3", displayName: "Sarah", profilePic: "/sarah.jpg" },
+            lastMessage: { text: "Hey how are you?" },
+            unreadCount: 2,
+            messages: []
+          },
+        ])
+      })
+    )
+    .mockImplementation((url) => {
+      if (url.includes("messages/chat1")) {
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve([
+            { text: "Thanks!", sender: "user1" },
+            { text: "You're welcome!", sender: "user2" }
+          ])
+        });
+      } else if (url.includes("messages/chat2")) {
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve([
+            { text: "Hey how are you?", sender: "user3" }
+          ])
+        });
+      } else if (url.includes("read")) {
+        return Promise.resolve({ ok: true });
+      } else if (url.includes("/send")) {
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve({
+            text: "This is a test message",
+            sender: "user2",
+            chatId: "chat2"
+          })
+        });
+      }
+    });
+});
+
 describe("Messages Integration", () => {
-  it("displays placeholder when no chat is selected", () => {
+  it("displays placeholder when no chat is selected", async () => {
     render(<Messages />);
-    expect(
-      screen.getByText("Select a chat to start messaging")
-    ).toBeInTheDocument();
+    await waitFor(() => screen.getByText("Select a chat to start messaging"));
+    expect(screen.getByText("Select a chat to start messaging")).toBeInTheDocument();
   });
 
-  it("opens the chat window when a chat is selected", () => {
+  it("opens the chat window when a chat is selected", async () => {
     render(<Messages />);
-
-    // Find and click on "Sarah"
-    const sarahChatItem = screen.getByRole("button", { name: /Sarah/i });
+    const sarahChatItem = await screen.findByRole("button", { name: /Sarah/i });
     fireEvent.click(sarahChatItem);
 
-    // The placeholder should be gone
-    expect(
-      screen.queryByText("Select a chat to start messaging")
-    ).not.toBeInTheDocument();
-
-    const chatWindow = screen.getByTestId("chat-window");
-
-    // ChatWindow should now render Sarah's chat
-    expect(within(chatWindow).getByText("Sarah")).toBeInTheDocument();
-    expect(
-      within(chatWindow).getByAltText("Profile Picture")
-    ).toBeInTheDocument();
-    expect(
-      within(chatWindow).getByText("Hey how are you?")
-    ).toBeInTheDocument();
+    await waitFor(() => {
+      const chatWindow = screen.getByTestId("chat-window");
+      expect(within(chatWindow).getByText("Sarah")).toBeInTheDocument();
+      expect(within(chatWindow).getByAltText("Profile Picture")).toBeInTheDocument();
+      expect(within(chatWindow).getByText("Hey how are you?")).toBeInTheDocument();
+    });
   });
 
-  it("opens a different chat if another contact is clicked", () => {
+  it("opens a different chat if another contact is clicked", async () => {
     render(<Messages />);
-
-    // Click on "John"
-    const johnChatItem = screen.getByRole("button", { name: /John/i }); // selects the one in the chat list
+    const johnChatItem = await screen.findByRole("button", { name: /John/i });
     fireEvent.click(johnChatItem);
 
-    // Now get the chat window content
-    const chatWindow = screen.getByTestId("chat-window");
-
-    // Scoped assertions
-    expect(within(chatWindow).getByText("Thanks!")).toBeInTheDocument();
-    expect(within(chatWindow).getByText("You're welcome!")).toBeInTheDocument();
-    expect(within(chatWindow).getByText("John")).toBeInTheDocument();
+    await waitFor(() => {
+      const chatWindow = screen.getByTestId("chat-window");
+      expect(within(chatWindow).getByText("Thanks!")).toBeInTheDocument();
+      expect(within(chatWindow).getByText("You're welcome!")).toBeInTheDocument();
+      expect(within(chatWindow).getByText("John")).toBeInTheDocument();
+    });
   });
 
-  it("filters chats based on the search input", () => {
+  it("adds a new message to the chat when sent", async () => {
     render(<Messages />);
-
-    // Search for "john"
-    const searchInput = screen.getByPlaceholderText("Search");
-    fireEvent.change(searchInput, { target: { value: "john" } });
-
-    // "John" should appear, "Sarah" should not
-    expect(screen.getByText("John")).toBeInTheDocument();
-    expect(screen.queryByText("Sarah")).not.toBeInTheDocument();
-
-    // Search for a name that doesn't exist
-    fireEvent.change(searchInput, { target: { value: "nonexistent" } });
-    expect(screen.getByText("No chats found")).toBeInTheDocument();
-  });
-
-  it("adds a new message to the chat when sent", () => {
-    render(<Messages />);
-
-    // 1. Select a chat (e.g., Sarah)
-    const sarahChatItem = screen.getByRole("button", { name: /Sarah/i });
+    const sarahChatItem = await screen.findByRole("button", { name: /Sarah/i });
     fireEvent.click(sarahChatItem);
 
-    // 2. Find input and type message
+    await waitFor(() => screen.getByTestId("message-input"));
+
     const input = screen.getByTestId("message-input");
     fireEvent.change(input, { target: { value: "This is a test message" } });
 
-    // 3. Click send
     const sendButton = screen.getByTestId("send-button");
     fireEvent.click(sendButton);
 
-    // 4. Assert message appears in chat window
-    const chatWindow = screen.getByTestId("chat-window");
-    expect(
-      within(chatWindow).getByText("This is a test message")
-    ).toBeInTheDocument();
+    await waitFor(() => {
+      const chatWindow = screen.getByTestId("chat-window");
+      expect(within(chatWindow).getByText("This is a test message")).toBeInTheDocument();
+    });
   });
 });

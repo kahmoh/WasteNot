@@ -166,10 +166,21 @@ export default function Messages() {
 
     setSelectedChatMessages(messages);
 
-    // Mark as read
-    // await fetch(`/api/chats/${chatId}/read`, {
-    //   method: "POST"
-    // });
+    // Mark messages as read
+    try {
+      await fetch(`/api/messages/${chatId}/read`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ readerId: currentUser._id }),
+      });
+    } catch (error) {
+      console.error("Failed to mark messages as read:", error);
+    }
+
+    // Optionally update local chat list state to show unreadCount = 0
+    setChats((prev) =>
+      prev.map((c) => (c.id === chatId ? { ...c, unreadCount: 0 } : c))
+    );
   };
 
   return (

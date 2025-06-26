@@ -14,12 +14,37 @@ router.post("/send", async (req, res) => {
     // Update chat's last message
     await Chat.findByIdAndUpdate(chatId, {
       lastMessage: message._id,
-      $inc: { unreadCount: 1 }
+      $inc: { unreadCount: 1 },
     });
 
     res.status(201).json(message);
   } catch (err) {
     res.status(500).json({ error: "Failed to send message." });
+  }
+});
+
+// Mark messages as read for a given chat and user
+router.post("/:chatId/read", async (req, res) => {
+  const { chatId } = req.params;
+  const { readerId } = req.body;
+
+  try {
+    const result = await Message.updateMany(
+      {
+        chat: chatId,
+        sender: { $ne: readerId }, // Only mark messages sent by others
+        read: false,
+      },
+      { $set: { read: true } }
+    );
+
+    // Optionally, reset unreadCount in Chat model
+    await Chat.findByIdAndUpdate(chatId, { unreadCount: 0 });
+
+    res.status(200).json({ updated: result.modifiedCount });
+  } catch (error) {
+    console.error("Failed to mark messages as read:", err);
+    res.status(500).json({ error: "Failed to update read status." });
   }
 });
 

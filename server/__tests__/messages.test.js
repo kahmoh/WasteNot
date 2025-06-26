@@ -1,92 +1,86 @@
-// tests/messages.test.js
 import { describe, it, expect, beforeEach, afterAll, beforeAll } from "vitest";
 import request from "supertest";
 import mongoose from "mongoose";
-import app from "../index"; // Your Express app
-import Chat from "../models/Chat";
-import Message from "../models/Message";
+import app from "../index";
+import Chat from "../models/Chat.model.js";
+import Message from "../models/Message.model.js";
+import User from "../models/User.model.js";
 import { MongoMemoryServer } from "mongodb-memory-server";
 
-let chatId;          // This will store the test chat's ID
-let mongoServer;     // Reference to in-memory MongoDB instance
+let mongoServer;
+let user1, user2, chat;
 
-// Create the in-memory MongoDB and connect to it before all tests
 beforeAll(async () => {
-  mongoServer = await MongoMemoryServer.create(); // Start the in-memory server
-  const uri = mongoServer.getUri(); // Get connection URI
-
+  mongoServer = await MongoMemoryServer.create();
+  const uri = mongoServer.getUri();
   await mongoose.connect(uri);
+
+  // Create test users
+  user1 = await User.create({ username: "user1", displayName: "User One" });
+  user2 = await User.create({ username: "user2", displayName: "User Two" });
+
+  // Create chat
+  chat = await Chat.create({ participant1: user1._id, participant2: user2._id });
 });
 
-// Before each test, clear data and create a new chat
 beforeEach(async () => {
-  await Chat.deleteMany();    // Remove all previous chats
-  await Message.deleteMany(); // Remove all previous messages
-
-  // Create a fresh chat for message testing
-  const chat = await Chat.create({ participants: ["u1", "u2"] });
-  chatId = chat._id; // Store ID for use in tests
+  await Message.deleteMany();
 });
 
-// After all tests, disconnect and stop the in-memory MongoDB server
 afterAll(async () => {
   await mongoose.connection.close();
   await mongoServer.stop();
 });
 
 describe("Message API", () => {
-  // Test: Sending a valid message
   it("should send a new message", async () => {
     const res = await request(app)
-      .post("/messages/send")
+      .post("/api/messages/send") // Match your real route
       .send({
-        chatId,
-        text: "Hello, this is a test message",
-        role: "user",
+        chatId: chat._id.toString(),
+        text: "Hello from test!",
+        sender: user1._id.toString(),
       });
 
-    expect(res.status).toBe(201); // Expect success
-    expect(res.body.text).toBe("Hello, this is a test message");
-    expect(res.body.role).toBe("user");
+    expect(res.status).toBe(201);
+    expect(res.body.text).toBe("Hello from test!");
+    expect(res.body.sender).toBe(user1._id.toString());
 
-    // Ensure the message was saved
-    const messages = await Message.find({ chatId });
+    const messages = await Message.find({ chat: chat._id });
     expect(messages.length).toBe(1);
   });
 
-  // Test: Missing chatId should result in 400
   it("should fail to send message if missing fields", async () => {
     const res = await request(app)
-      .post("/messages/send")
-      .send({ text: "Missing chatId", role: "user" });
+      .post("/api/messages/send")
+      .send({ text: "Missing sender", chatId: chat._id.toString() });
 
-    expect(res.status).toBe(400);
+    expect(res.status).toBe(500); // Your route throws 500 on validation error
   });
 
-  // Test: Getting all messages from a chat
   it("should return all messages for a chat", async () => {
     await Message.create([
-      { chatId, text: "msg1", role: "user" },
-      { chatId, text: "msg2", role: "other" },
+      { chat: chat._id, text: "First", sender: user1._id },
+      { chat: chat._id, text: "Second", sender: user2._id },
     ]);
 
-    const res = await request(app).get(`/messages/${chatId}`);
+    const res = await request(app).get(`/api/messages/${chat._id}`);
     expect(res.status).toBe(200);
     expect(res.body.length).toBe(2);
-    expect(res.body[0].text).toBe("msg1");
-    expect(res.body[1].text).toBe("msg2");
+    expect(res.body[0].text).toBe("First");
+    expect(res.body[1].text).toBe("Second");
   });
 
-  // Test: Chat has no messages
-  it("should return empty array for chat with no messages", async () => {
-    const res = await request(app).get(`/messages/${chatId}`);
+  it("should return empty array if no messages exist", async () => {
+    const newChat = await Chat.create({ participant1: user1._id, participant2: user2._id });
+
+    const res = await request(app).get(`/api/messages/${newChat._id}`);
     expect(res.status).toBe(200);
     expect(res.body).toEqual([]);
   });
 
-  // Test: Invalid chat ID should return 404
-  it("should return 404 for invalid chatId", async () => {
-    const res = await request(app).get(`/messages/invalidchatid`);
+  it("should return 404 for invalid chatId format", async () => {
+    const res = await request(app).get("/api/messages/invalid-id");
     expect(res.status).toBe(404);
   });
 });

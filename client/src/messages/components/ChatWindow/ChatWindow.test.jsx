@@ -3,54 +3,64 @@ import { render, screen, fireEvent } from "@testing-library/react";
 import ChatWindow from "./ChatWindow";
 import React from "react";
 
-// Mock ChatMessage only
-vi.mock("./ChatMessage", () => ({
-  default: ({ message, role }) => (
-    <div data-testid="chat-message" data-role={role}>
+// Mock ChatMessage correctly (based on your real props)
+vi.mock("../ChatMessage/ChatMessage", () => ({
+  default: ({ message, isCurrentUser }) => (
+    <div data-testid="chat-message" data-user={isCurrentUser ? "self" : "other"}>
       {message}
     </div>
   ),
 }));
 
 const initialMessages = [
-  { text: "Hello!", role: "user" },
-  { text: "Hi, how can I help?", role: "other" },
+  { text: "Hello!", sender: "user123" },
+  { text: "Hi, how can I help?", sender: "bot456" },
 ];
+
+const currentUser = { _id: "user123" };
 
 describe("ChatWindow", () => {
   it("renders profile picture and name", () => {
-    render(<ChatWindow profilePic="/profile.jpg" name="Marcus" messages={[]} />);
+    render(<ChatWindow profilePic="/profile.jpg" name="Marcus" messages={[]} currentUser={currentUser} />);
     expect(screen.getByAltText("Profile Picture")).toHaveAttribute("src", "/profile.jpg");
     expect(screen.getByText("Marcus")).toBeInTheDocument();
   });
 
   it("renders all chat messages", () => {
-    render(<ChatWindow profilePic="/profile.jpg" name="Marcus" messages={initialMessages} />);
+    render(<ChatWindow profilePic="/profile.jpg" name="Marcus" messages={initialMessages} currentUser={currentUser} />);
     const messages = screen.getAllByTestId("chat-message");
     expect(messages).toHaveLength(2);
     expect(messages[0]).toHaveTextContent("Hello!");
+    expect(messages[0]).toHaveAttribute("data-user", "self");
     expect(messages[1]).toHaveTextContent("Hi, how can I help?");
+    expect(messages[1]).toHaveAttribute("data-user", "other");
   });
 
   it("renders the message input area", () => {
-    render(<ChatWindow profilePic="/profile.jpg" name="Marcus" messages={initialMessages} />);
+    render(<ChatWindow profilePic="/profile.jpg" name="Marcus" messages={[]} currentUser={currentUser} />);
     expect(screen.getByPlaceholderText("Send a message...")).toBeInTheDocument();
   });
 
-  it("adds a new message when sent", () => {
-    render(<ChatWindow profilePic="/profile.jpg" name="Marcus" messages={initialMessages} />);
+  it("calls onSend when a new message is submitted", () => {
+    const mockSend = vi.fn();
+
+    render(
+      <ChatWindow
+        profilePic="/profile.jpg"
+        name="Marcus"
+        messages={initialMessages}
+        currentUser={currentUser}
+        onSend={mockSend}
+      />
+    );
 
     const input = screen.getByPlaceholderText("Send a message...");
     const sendButton = screen.getByTestId("send-button");
 
-    // Type a new message
     fireEvent.change(input, { target: { value: "This is a new message" } });
     fireEvent.click(sendButton);
 
-    // Expect the new message to appear
-    const messages = screen.getAllByTestId("chat-message");
-    expect(messages).toHaveLength(3);
-    expect(messages[2]).toHaveTextContent("This is a new message");
-    expect(messages[2]).toHaveAttribute("data-role", "user");
+    // Verify the onSend callback was triggered with the correct text
+    expect(mockSend).toHaveBeenCalledWith("This is a new message");
   });
 });

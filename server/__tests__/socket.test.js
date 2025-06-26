@@ -5,17 +5,21 @@ import Client from "socket.io-client";
 import mongoose from "mongoose";
 import { MongoMemoryServer } from "mongodb-memory-server";
 
-import Message from "../models/Message";
-import Chat from "../models/Chat";
+import Message from "../models/Message.model.js";
+import Chat from "../models/Chat.model.js";
+import User from "../models/User.model.js";
 
 let io, server, clientSocket, mongoServer;
+let userA, userB;
 
 beforeAll(async () => {
-  // Start in-memory MongoDB instance
   mongoServer = await MongoMemoryServer.create();
   const uri = mongoServer.getUri();
+  await mongoose.connect(uri);
 
-  await mongoose.connect(uri); // Connect mongoose to in-memory DB
+  // Create users
+  userA = await User.create({ username: "userA", displayName: "User A" });
+  userB = await User.create({ username: "userB", displayName: "User B" });
 
   // Create HTTP + Socket.IO server
   await new Promise((resolve) => {
@@ -25,42 +29,41 @@ beforeAll(async () => {
       cors: { origin: "*" },
     });
 
-    // Handle socket logic similar to your actual backend
+    // Your socket handler
     io.on("connection", (socket) => {
-      socket.on("send-message", async ({ chatId, text }) => {
+      socket.on("send-message", async ({ chatId, text, sender }) => {
         try {
-          // Save the message to DB
           const message = await Message.create({
+            chat: chatId,
+            text,
+            sender,
+          });
+
+          await Chat.findByIdAndUpdate(chatId, {
+            lastMessage: message._id,
+            $set: { updatedAt: new Date() },
+          });
+
+          io.emit("receive-message", {
+            _id: message._id.toString(),
             chatId,
             text,
-            role: "user",
+            sender,
           });
-
-          // Update chat to include the message
-          await Chat.findByIdAndUpdate(chatId, {
-            $push: { messages: message._id },
-            $set: { lastUpdated: Date.now() },
-          });
-
-          // Emit the message back to clients
-          io.emit("receive-message", message);
         } catch (err) {
           console.error("Socket message error:", err);
         }
       });
     });
 
-    // Start server and connect test client
     httpServer.listen(() => {
       const port = httpServer.address().port;
-
       const socket = new Client(`http://localhost:${port}`);
       socket.on("connect", () => {
         clientSocket = socket;
+        server = httpServer;
         resolve();
       });
-
-      server = httpServer;
     });
   });
 });
@@ -69,39 +72,37 @@ afterAll(async () => {
   io?.close();
   clientSocket?.close();
   server?.close();
-
   await mongoose.connection.close();
   await mongoServer.stop();
 });
 
 describe("Socket.IO + MongoDB integration", () => {
   it("saves message to DB and emits to clients", async () => {
-    // Create a chat to use its ID
-    const chat = await Chat.create({ participants: ["userA", "userB"] });
+    const chat = await Chat.create({
+      participant1: userA._id,
+      participant2: userB._id,
+    });
 
-    // Set up listener for emitted message
     const promise = new Promise((resolve) => {
       clientSocket.on("receive-message", async (msg) => {
-        // Check message structure
         expect(msg.text).toBe("Hello from socket!");
         expect(msg.chatId).toBe(chat._id.toString());
-        expect(msg.role).toBe("user");
+        expect(msg.sender).toBe(userA._id.toString());
 
-        // Check that message is saved in DB
         const saved = await Message.findById(msg._id);
         expect(saved).not.toBeNull();
         expect(saved.text).toBe("Hello from socket!");
+        expect(saved.chat.toString()).toBe(chat._id.toString());
         resolve();
       });
     });
 
-    // Emit message via socket
     clientSocket.emit("send-message", {
       chatId: chat._id.toString(),
       text: "Hello from socket!",
+      sender: userA._id.toString(),
     });
 
-    // Wait for test to complete
     await promise;
   });
 });
